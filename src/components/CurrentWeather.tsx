@@ -2,11 +2,12 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
-  Sun, Moon, Droplets, Wind, 
+  Droplets, Wind, 
   Thermometer, Cloud, Eye, 
   ArrowUpRight, CalendarDays
 } from "lucide-react";
 import { CurrentWeather as CurrentWeatherType, Location, getWeatherIcon } from "@/services/weatherApi";
+import WeatherIcon from "./WeatherIcon";
 
 interface CurrentWeatherProps {
   current: CurrentWeatherType;
@@ -15,18 +16,8 @@ interface CurrentWeatherProps {
 
 const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location }) => {
   const isDay = current.is_day === 1;
-  const weatherIcon = getWeatherIcon(current.condition, isDay);
+  const weatherIconName = getWeatherIcon(current.condition, isDay);
   
-  // Get the corresponding icon component
-  const getIconComponent = () => {
-    switch (weatherIcon) {
-      case "sun": return <Sun className="h-16 w-16 text-yellow-400" />;
-      case "moon": return <Moon className="h-16 w-16 text-gray-300" />;
-      case "cloud": return <Cloud className="h-16 w-16 text-gray-400" />;
-      default: return <Sun className="h-16 w-16 text-yellow-400" />;
-    }
-  };
-
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
@@ -38,7 +29,7 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location }) =>
             </div>
             
             <div className="flex items-center space-x-4">
-              {getIconComponent()}
+              <WeatherIcon iconName={weatherIconName} className="h-16 w-16" />
               <div>
                 <div className="text-5xl font-bold">{Math.round(current.temp_c)}°C</div>
                 <div className="text-muted-foreground">Feels like {Math.round(current.feelslike_c)}°C</div>
