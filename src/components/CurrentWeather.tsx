@@ -4,17 +4,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   Droplets, Wind, 
   Thermometer, Cloud, Eye, 
-  ArrowUpRight, CalendarDays
+  ArrowUpRight, CalendarDays,
+  BellRing, AlertTriangle
 } from "lucide-react";
 import { CurrentWeather as CurrentWeatherType, Location, getWeatherIcon } from "@/services/weatherApi";
 import WeatherIcon from "./WeatherIcon";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import WeatherInsights from "./WeatherInsights";
 
 interface CurrentWeatherProps {
   current: CurrentWeatherType;
   location: Location;
+  alerts?: any[];
 }
 
-const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location }) => {
+const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location, alerts = [] }) => {
   const isDay = current.is_day === 1;
   const weatherIconName = getWeatherIcon(current.condition, isDay);
   
@@ -40,6 +44,18 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location }) =>
               <p className="text-xl font-medium">{current.condition.text}</p>
               <p className="text-sm text-muted-foreground">Last updated: {new Date(current.last_updated).toLocaleTimeString()}</p>
             </div>
+
+            <WeatherInsights current={current} condition={current.condition.text} />
+            
+            {alerts && alerts.length > 0 && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Weather Alert</AlertTitle>
+                <AlertDescription>
+                  {alerts[0].headline || "Severe weather warning in your area"}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
           
           <div className="grid grid-cols-2 gap-4">
