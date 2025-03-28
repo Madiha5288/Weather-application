@@ -4,6 +4,53 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+// Define types for the Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  error: any;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResult;
+  item(index: number): SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternative;
+  item(index: number): SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onstart: () => void;
+  onspeechend: () => void;
+  onerror: (event: any) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+// Add SpeechRecognition to window type
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+}
+
 interface VoiceSearchProps {
   onSearch: (query: string) => void;
 }
@@ -27,8 +74,13 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch }) => {
         return;
       }
       
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+      const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognitionConstructor) {
+        throw new Error("Speech recognition not supported");
+      }
+      
+      const recognition = new SpeechRecognitionConstructor();
       
       recognition.lang = 'en-US';
       recognition.continuous = false;
@@ -38,7 +90,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch }) => {
         setIsListening(true);
       };
       
-      recognition.onresult = (event) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setIsListening(false);
         

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Smartwatch } from "lucide-react";
+import { Watch } from "lucide-react"; // Replace Smartwatch with Watch which exists in lucide-react
 import WeatherIcon from "@/components/WeatherIcon";
 import { getWeatherIcon } from "@/services/weatherApi";
 
@@ -15,12 +15,14 @@ const SmartWatchDisplay: React.FC<SmartWatchDisplayProps> = ({
   condition = "clear",
   location = "Unknown"
 }) => {
-  const weatherIcon = getWeatherIcon(condition, true);
+  // Create a condition object that matches the expected type
+  const conditionObj = { code: 1000, text: condition };
+  const weatherIcon = getWeatherIcon(conditionObj, true);
   
   return (
     <div className="flex flex-col items-center space-y-3">
       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-        <Smartwatch className="h-4 w-4" />
+        <Watch className="h-4 w-4" />
         <span>Smartwatch Preview</span>
       </div>
       
