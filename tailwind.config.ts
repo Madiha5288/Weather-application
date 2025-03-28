@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Weather app specific colors
+				sky: {
+					light: '#87CEEB',
+					DEFAULT: '#0EA5E9',
+					dark: '#1E40AF'
+				},
+				sunny: '#FDB813',
+				cloudy: '#D3D3D3',
+				rainy: '#4F94CD',
+				stormy: '#483D8B',
+				snowy: '#F0F8FF',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -89,6 +101,13 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			backgroundImage: {
+				'gradient-clear': 'linear-gradient(to bottom right, #87CEEB, #E0F7FA)',
+				'gradient-cloudy': 'linear-gradient(to bottom right, #B0C4DE, #D3D3D3)',
+				'gradient-rainy': 'linear-gradient(to bottom right, #4682B4, #4F94CD)',
+				'gradient-stormy': 'linear-gradient(to bottom right, #4B0082, #483D8B)',
+				'gradient-snowy': 'linear-gradient(to bottom right, #E0FFFF, #F0F8FF)',
 			}
 		}
 	},
