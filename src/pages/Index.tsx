@@ -8,12 +8,15 @@ import HourlyForecast from "@/components/HourlyForecast";
 import DailyForecast from "@/components/DailyForecast";
 import SearchBar from "@/components/SearchBar";
 import LoadingState from "@/components/LoadingState";
+import SmartWatchDisplay from "@/components/SmartWatchDisplay";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<string>("New York"); // Default location
   const [backgroundClass, setBackgroundClass] = useState("bg-gradient-clear");
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,7 +73,7 @@ const Index = () => {
       <div className="container max-w-5xl mx-auto px-4">
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
-            WeatherWise Wizard
+            Breezy Weather
           </h1>
           <SearchBar onLocationSelect={handleLocationSelect} />
         </header>
@@ -79,10 +82,24 @@ const Index = () => {
           <LoadingState />
         ) : weatherData ? (
           <div className="space-y-6">
-            <CurrentWeather 
-              current={weatherData.current} 
-              location={weatherData.location} 
-            />
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1">
+                <CurrentWeather 
+                  current={weatherData.current} 
+                  location={weatherData.location} 
+                />
+              </div>
+              
+              {!isMobile && (
+                <div className="w-40 hidden lg:block">
+                  <SmartWatchDisplay 
+                    temperature={weatherData.current.temp_c}
+                    condition={weatherData.current.condition.text}
+                    location={weatherData.location.name}
+                  />
+                </div>
+              )}
+            </div>
             
             <Tabs defaultValue="hourly" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -105,13 +122,13 @@ const Index = () => {
           </div>
         ) : (
           <div className="flex justify-center items-center min-h-[300px]">
-            <p className="text-lg text-gray-600">Loading weather data...</p>
+            <p className="text-lg text-muted-foreground">Loading weather data...</p>
           </div>
         )}
         
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>Data powered by WeatherAPI.com</p>
-          <p className="mt-1">© {new Date().getFullYear()} WeatherWise Wizard</p>
+          <p className="mt-1">© {new Date().getFullYear()} Breezy Weather</p>
         </footer>
       </div>
     </div>

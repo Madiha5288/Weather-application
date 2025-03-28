@@ -5,6 +5,47 @@
 
 @layer base {
   :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .light {
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
@@ -33,8 +74,6 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 201 100% 36%;
 
-    --radius: 0.5rem;
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -42,44 +81,6 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 201 100% 45%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 201 100% 45%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -90,7 +91,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground dark;
   }
 }
 
@@ -99,7 +100,7 @@
 }
 
 .weather-card {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg p-4;
+  @apply bg-card text-card-foreground rounded-lg shadow-md transition-all duration-300 hover:shadow-lg p-4 border border-border/30;
 }
 
 .forecast-item {
@@ -107,11 +108,11 @@
 }
 
 .temperature-high {
-  @apply text-orange-500 font-medium;
+  @apply text-amber-400 font-medium;
 }
 
 .temperature-low {
-  @apply text-blue-500 font-medium;
+  @apply text-blue-400 font-medium;
 }
 
 .weather-gradient-container {
@@ -119,3 +120,49 @@
   background-size: cover;
   transition: background-image 1s ease-in-out;
 }
+
+/* Dark mode weather gradients */
+.bg-gradient-clear {
+  @apply bg-gradient-to-br from-gray-900 via-blue-950 to-indigo-950;
+}
+
+.bg-gradient-cloudy {
+  @apply bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800;
+}
+
+.bg-gradient-rainy {
+  @apply bg-gradient-to-br from-gray-900 via-blue-900 to-slate-800;
+}
+
+.bg-gradient-stormy {
+  @apply bg-gradient-to-br from-gray-950 via-indigo-950 to-gray-900;
+}
+
+.bg-gradient-snowy {
+  @apply bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-950;
+}
+
+/* Glass morphism for cards */
+.glass-card {
+  @apply backdrop-blur-md bg-background/30 border border-white/10 shadow-lg;
+}
+
+/* Animation for loading and transitions */
+@keyframes pulse-dark {
+  0%, 100% { @apply bg-gray-800; }
+  50% { @apply bg-gray-700; }
+}
+
+.skeleton-dark {
+  animation: pulse-dark 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Smartwatch specific styles */
+.smartwatch-view {
+  max-width: 180px;
+  max-height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  @apply bg-black text-white p-2 mx-auto border-4 border-gray-700;
+}
+

@@ -1,135 +1,131 @@
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { searchLocations, SearchResult } from "@/services/weatherApi";
-import { Search, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { useDebounce } from "@/hooks/use-debounce";
+import VoiceSearch from "@/components/VoiceSearch";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+interface SearchResult {
+  id: string;
+  name: string;
+  region: string;
+  country: string;
+  lat: number;
+  lon: number;
+  url: string;
+}
 
 interface SearchBarProps {
   onLocationSelect: (location: string) => void;
 }
 
-const SearchBar = ({ onLocationSelect }: SearchBarProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+const SearchBar: React.FC<SearchBarProps> = ({ onLocationSelect }) => {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isResultsOpen, setIsResultsOpen] = useState(false);
+  const debouncedQuery = useDebounce(query, 300);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (debouncedQuery.length >= 2) {
+      searchLocations(debouncedQuery);
+    } else {
+      setResults([]);
+      setIsResultsOpen(false);
+    }
+  }, [debouncedQuery]);
 
   useEffect(() => {
-    if (searchQuery.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const results = await searchLocations(searchQuery);
-        setSearchResults(results);
-        setIsOpen(results.length > 0);
-      } catch (error) {
-        console.error("Error searching locations:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 500);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
+    // Add event listener to detect clicks outside the results dropdown
+    const handleClickOutside = (event: MouseEvent) => {
+      if (resultsRef.current && !resultsRef.current.contains(event.target as Node)) {
+        setIsResultsOpen(false);
       }
     };
-  }, [searchQuery]);
 
-  const handleLocationSelect = (location: SearchResult) => {
-    const locationString = `${location.lat},${location.lon}`;
-    onLocationSelect(locationString);
-    setSearchQuery(`${location.name}, ${location.country}`);
-    setIsOpen(false);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const searchLocations = async (searchQuery: string) => {
+    if (searchQuery.trim() === "") return;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/search.json?key=b9d8796e16e84432a5f120309252703&q=${encodeURIComponent(searchQuery)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      
+      const data = await response.json();
+      setResults(data);
+      setIsResultsOpen(true);
+    } catch (error) {
+      console.error("Error searching locations:", error);
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.length > 0) {
-      onLocationSelect(searchQuery);
-      setIsOpen(false);
-    }
+  const handleLocationClick = (location: SearchResult) => {
+    setQuery(`${location.name}, ${location.country}`);
+    setIsResultsOpen(false);
+    onLocationSelect(`${location.lat},${location.lon}`);
+  };
+
+  const handleVoiceSearch = (transcript: string) => {
+    setQuery(transcript);
+    searchLocations(transcript);
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="relative">
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <div className="relative">
-              <Input
-                ref={inputRef}
-                type="text"
-                placeholder="Search for a location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10 focus:ring-2 focus:ring-sky w-full"
-                autoComplete="off"
-              />
-              <Button 
-                type="submit"
-                size="icon"
-                variant="ghost"
-                className="absolute right-0 top-0 h-full aspect-square text-muted-foreground hover:text-foreground"
-              >
-                <Search className="h-4 w-4" />
-                <span className="sr-only">Search</span>
-              </Button>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent 
-            className="p-0 w-[var(--radix-popover-trigger-width)] max-h-[300px] overflow-y-auto"
-            align="start"
-          >
-            {isLoading ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                Searching locations...
+    <div className="relative w-full max-w-lg mx-auto" ref={resultsRef}>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Input
+            type="text"
+            placeholder="Search for a location..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => results.length > 0 && setIsResultsOpen(true)}
+            className="pr-10 rounded-full border-input"
+          />
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <Search className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+        <VoiceSearch onSearch={handleVoiceSearch} />
+        <ThemeToggle />
+      </div>
+      
+      {isResultsOpen && results.length > 0 && (
+        <Card className="absolute z-50 w-full mt-1 p-2 max-h-60 overflow-auto shadow-lg">
+          {results.map((result) => (
+            <Button
+              key={result.id}
+              variant="ghost"
+              className="w-full justify-start font-normal mb-1 hover:bg-accent rounded-lg"
+              onClick={() => handleLocationClick(result)}
+            >
+              <div className="truncate text-left">
+                {result.name}, {result.region && `${result.region}, `}
+                {result.country}
               </div>
-            ) : searchResults.length > 0 ? (
-              <ul className="py-2">
-                {searchResults.map((result) => (
-                  <li key={`${result.name}-${result.lat}-${result.lon}`}>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-left px-4 py-2 flex items-center gap-2"
-                      onClick={() => handleLocationSelect(result)}
-                    >
-                      <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <div>
-                        <span className="font-medium">{result.name}</span>
-                        {result.region && (
-                          <span className="text-muted-foreground">, {result.region}</span>
-                        )}
-                        <span className="text-muted-foreground ml-1">{result.country}</span>
-                      </div>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                No locations found
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </form>
+            </Button>
+          ))}
+        </Card>
+      )}
     </div>
   );
 };
