@@ -252,7 +252,47 @@ export const getWeatherIcon = (condition: { code: number; text: string }, isDay:
     return "cloud-lightning";
   }
   
-  // Default icon based on condition code
+  // More specific condition code mappings
+  const code = condition.code;
+  
+  // Clear/Sunny
+  if (code === 1000) {
+    return isDay ? "sun" : "moon";
+  }
+  // Partly cloudy
+  else if (code === 1003) {
+    return isDay ? "cloud-sun" : "cloud-moon";
+  }
+  // Cloudy/Overcast
+  else if ([1006, 1009].includes(code)) {
+    return "cloud";
+  }
+  // Mist/Fog
+  else if ([1030, 1135, 1147].includes(code)) {
+    return "cloud-fog";
+  }
+  // Drizzle
+  else if ([1063, 1150, 1153, 1180, 1183, 1186, 1189].includes(code)) {
+    return "cloud-drizzle";
+  }
+  // Rain
+  else if ([1063, 1180, 1183, 1186, 1189, 1192, 1195, 1240, 1243, 1246].includes(code)) {
+    return "cloud-rain";
+  }
+  // Sleet/Ice
+  else if ([1066, 1072, 1168, 1171, 1201, 1204, 1207, 1249, 1252].includes(code)) {
+    return "cloud-hail";
+  }
+  // Snow
+  else if ([1114, 1117, 1210, 1213, 1216, 1219, 1222, 1225, 1255, 1258, 1261, 1264].includes(code)) {
+    return "cloud-snow";
+  }
+  // Thunder/Lightning
+  else if ([1087, 1273, 1276, 1279, 1282].includes(code)) {
+    return "cloud-lightning";
+  }
+  
+  // Default fallback
   return "cloud";
 };
 
