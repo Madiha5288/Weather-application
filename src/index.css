@@ -91,7 +91,7 @@
   }
 
   body {
-    @apply bg-background text-foreground dark;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -165,4 +165,3 @@
   overflow: hidden;
   @apply bg-black text-white p-2 mx-auto border-4 border-gray-700;
 }
-
