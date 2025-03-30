@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import './mobile.css';
 
 // Add this for mobile device detection
 const isCapacitorApp = 

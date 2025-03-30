@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MobileWrapper from "./components/MobileWrapper";
+import MobilePreview from "./components/MobilePreview";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </MobileWrapper>
+        <MobilePreview>Preview</MobilePreview>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
