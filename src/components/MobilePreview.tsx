@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Smartphone, Tablet, X } from 'lucide-react';
 
 interface MobilePreviewProps {
@@ -40,8 +40,8 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({ children }) => {
   };
   
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button 
           variant="outline" 
           size="sm" 
@@ -51,8 +51,8 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({ children }) => {
           <Smartphone className="h-4 w-4" />
           <span className="hidden sm:inline">Mobile Preview</span>
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[95%] sm:w-[450px] p-0 flex flex-col overflow-hidden">
+      </DialogTrigger>
+      <DialogContent className="w-full max-w-full h-[100vh] p-0 flex flex-col overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-semibold">Mobile Preview</h2>
           <div className="flex items-center gap-2">
@@ -102,8 +102,8 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({ children }) => {
             <div className="bg-black h-1"></div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
