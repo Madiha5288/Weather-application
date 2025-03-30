@@ -1,0 +1,66 @@
+
+/* Mobile-specific styles */
+:root {
+  --safe-area-inset-top: 0px;
+  --safe-area-inset-bottom: 0px;
+}
+
+.capacitor-app {
+  /* Prevent overscroll effects */
+  overscroll-behavior: none;
+}
+
+.mobile-app {
+  /* Optimize touch interactions */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Adjust card styles for mobile */
+.mobile-app .card {
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+/* Optimize scrolling performance */
+.mobile-app * {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Add padding for notches and home indicators */
+.mobile-app {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* Hide scrollbars on mobile but maintain functionality */
+.mobile-app ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Larger touch targets for mobile */
+.mobile-app button,
+.mobile-app .interactive-element {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Optimize for offline use with visual indicator */
+.mobile-app.offline .offline-sensitive {
+  opacity: 0.7;
+}
+
+/* Native-like animations */
+.mobile-app .animate-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Status bar height adjustments for different devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .mobile-app {
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  }
+}
