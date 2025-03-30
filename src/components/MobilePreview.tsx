@@ -15,10 +15,17 @@ interface MobilePreviewProps {
   children: React.ReactNode;
 }
 
-const DEVICE_PRESETS = {
-  "iphone-13": { width: 390, height: 844, name: "iPhone 13" },
-  "pixel-5": { width: 393, height: 851, name: "Pixel 5" },
-  "samsung-s21": { width: 360, height: 800, name: "Samsung S21" },
+interface DevicePreset {
+  width: number;
+  height: number;
+  name: string;
+  isTablet: boolean;
+}
+
+const DEVICE_PRESETS: Record<string, DevicePreset> = {
+  "iphone-13": { width: 390, height: 844, name: "iPhone 13", isTablet: false },
+  "pixel-5": { width: 393, height: 851, name: "Pixel 5", isTablet: false },
+  "samsung-s21": { width: 360, height: 800, name: "Samsung S21", isTablet: false },
   "ipad-air": { width: 820, height: 1180, name: "iPad Air", isTablet: true },
   "ipad-mini": { width: 768, height: 1024, name: "iPad Mini", isTablet: true },
 };
