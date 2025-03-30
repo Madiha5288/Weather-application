@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, BarChart2 } from "lucide-react";
+import { Calendar, BarChart2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface HistoricalWeatherProps {
   location: {
@@ -18,66 +19,144 @@ const generateHistoricalData = (daysAgo: number, location: { name: string; count
   const data = [];
   const today = new Date();
   
-  // Use location to seed the random data generation
-  // Create a simple hash from the location name and country
-  const locationSeed = location.name.charCodeAt(0) + 
-                       (location.country.charCodeAt(0) || 0);
+  // Use location name and country to create a unique seed for this location
+  const locationString = `${location.name}${location.country}`;
+  let locationSeed = 0;
+  for (let i = 0; i < locationString.length; i++) {
+    locationSeed += locationString.charCodeAt(i);
+  }
   
-  // Different base temps based on region/country (simplified approach)
+  // Different base temps based on region/country (more detailed climate zones)
   let baseTemp = 22; // Default base temperature
   let rainProbability = 0.3; // Default rain probability
+  let tempVariability = 5; // How much temp varies day to day
   
-  // Adjust base temperature based on country/region (very simplified climate zones)
+  // Adjust base temperature based on country/region (more detailed climate zones)
   const country = location.country.toLowerCase();
   
+  // Arctic/Very Cold regions
+  if (['antarctica', 'greenland'].some(c => country.includes(c))) {
+    baseTemp = -15;
+    rainProbability = 0.2;
+    tempVariability = 3;
+  }
   // Northern cold countries
-  if (['norway', 'sweden', 'finland', 'iceland', 'canada', 'russia'].some(c => country.includes(c))) {
-    baseTemp = 10;
+  else if (['norway', 'sweden', 'finland', 'iceland', 'canada', 'russia'].some(c => country.includes(c))) {
+    baseTemp = 5;
     rainProbability = 0.4;
+    tempVariability = 4;
   } 
-  // Hot countries
-  else if (['egypt', 'saudi', 'qatar', 'uae', 'australia', 'india'].some(c => country.includes(c))) {
-    baseTemp = 32;
-    rainProbability = 0.1;
+  // Continental cold climates
+  else if (['mongolia', 'kazakhstan', 'kyrgyzstan'].some(c => country.includes(c))) {
+    baseTemp = 8;
+    rainProbability = 0.2;
+    tempVariability = 8; // High variability
   }
-  // Tropical countries
-  else if (['brazil', 'indonesia', 'malaysia', 'thailand', 'philippines'].some(c => country.includes(c))) {
+  // Hot desert countries
+  else if (['egypt', 'saudi', 'qatar', 'uae', 'libya', 'iraq'].some(c => country.includes(c))) {
+    baseTemp = 35;
+    rainProbability = 0.05;
+    tempVariability = 6;
+  }
+  // Hot but not desert
+  else if (['australia', 'india', 'pakistan', 'nigeria', 'sudan'].some(c => country.includes(c))) {
+    baseTemp = 30;
+    rainProbability = 0.15;
+    tempVariability = 4;
+  }
+  // Tropical humid countries
+  else if (['brazil', 'indonesia', 'malaysia', 'thailand', 'philippines', 'vietnam', 'colombia'].some(c => country.includes(c))) {
     baseTemp = 28;
-    rainProbability = 0.6;
+    rainProbability = 0.7;
+    tempVariability = 2; // Less variability in tropics
   }
-  // Temperate regions
-  else if (['uk', 'france', 'germany', 'italy', 'spain', 'united states', 'japan'].some(c => country.includes(c))) {
+  // Mediterranean
+  else if (['greece', 'turkey', 'italy', 'spain', 'portugal', 'cyprus'].some(c => country.includes(c))) {
+    baseTemp = 24;
+    rainProbability = 0.2;
+    tempVariability = 3;
+  }
+  // Temperate maritime
+  else if (['uk', 'ireland', 'netherlands', 'belgium', 'denmark'].some(c => country.includes(c))) {
+    baseTemp = 15;
+    rainProbability = 0.5;
+    tempVariability = 3;
+  }
+  // Continental temperate
+  else if (['france', 'germany', 'poland', 'austria', 'switzerland', 'united states', 'japan'].some(c => country.includes(c))) {
     baseTemp = 18;
-    rainProbability = 0.3;
+    rainProbability = 0.35;
+    tempVariability = 5;
+  }
+  
+  // Make adjustments for specific locations within countries
+  // Desert areas
+  if (location.name.toLowerCase().match(/desert|sahara|gobi|mojave|kalahari/)) {
+    baseTemp += 5;
+    rainProbability = 0.05;
+    tempVariability += 2;
+  }
+  // Mountain areas
+  else if (location.name.toLowerCase().match(/mount|mountain|hill|alps|andes|himalaya/)) {
+    baseTemp -= 8;
+    rainProbability += 0.1;
+    tempVariability += 1;
+  }
+  // Coastal areas
+  else if (location.name.toLowerCase().match(/coast|beach|sea|ocean|bay|gulf/)) {
+    tempVariability -= 1;
+    rainProbability += 0.1;
   }
   
   // Add some randomness based on the location name
   const locationVariation = (locationSeed % 10) - 5;
   baseTemp += locationVariation;
   
+  // Apply seasonal effects based on hemisphere
+  const isNorthernHemisphere = !['australia', 'new zealand', 'argentina', 'chile', 'brazil', 'south africa', 'uruguay', 'paraguay'].some(c => country.includes(c));
+  
+  let previousTemp = baseTemp; // For creating more realistic day-to-day transitions
+  
   for (let i = daysAgo; i >= 0; i--) {
     const date = new Date();
     date.setDate(today.getDate() - i);
     
-    // Generate random but somewhat realistic temperature data
-    // Use a seeded random number based on location and date
-    const dateHash = date.getDate() + date.getMonth() * 30;
-    const seedValue = (locationSeed + dateHash) / 100;
+    // Create a deterministic but unique seed for this specific day and location
+    const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (24 * 60 * 60 * 1000));
+    const seedValue = (locationSeed + dayOfYear) / 100;
     
-    // Pseudo-random function
+    // Pseudo-random function that will give the same result for the same inputs
     const pseudoRandom = (seed: number) => {
-      return ((Math.sin(seed) + 1) / 2);
+      return ((Math.sin(seed * 12345.6789) + 1) / 2);
     };
     
-    const seasonalVariation = Math.sin((date.getMonth() + 1) / 12 * Math.PI * 2) * 10;
-    const dailyVariation = (pseudoRandom(seedValue) * 10) - 5;
+    // Calculate seasonal variation (opposite for southern hemisphere)
+    let monthOffset = date.getMonth();
+    if (!isNorthernHemisphere) {
+      monthOffset = (monthOffset + 6) % 12;
+    }
+    
+    const seasonalVariation = Math.sin((monthOffset + 1) / 12 * Math.PI * 2) * 10;
+    
+    // Calculate daily variation - use previous temperature to smooth transitions
+    const randomFactor = pseudoRandom(seedValue);
+    const dailyVariation = (randomFactor * 2 - 1) * tempVariability;
+    
+    // Progressive adjustment to create smoother temperature curves
+    const tempWithVariation = previousTemp * 0.7 + (baseTemp + seasonalVariation + dailyVariation) * 0.3;
+    previousTemp = tempWithVariation;
     
     // Calculate rainfall - more likely on colder days with some randomness
-    const tempWithVariation = baseTemp + seasonalVariation + dailyVariation;
-    const rainModifier = pseudoRandom(seedValue + 0.5); // Different seed for rain
-    const rainAmount = (rainModifier > (1 - rainProbability)) ? 
-                       Math.round(rainModifier * 20) : 
-                       0;
+    const rainSeed = seedValue + 0.5; // Different seed for rain
+    const rainModifier = pseudoRandom(rainSeed);
+    const isRaining = rainModifier > (1 - rainProbability);
+    
+    // Rainfall amount depends on season and temperature
+    let rainAmount = 0;
+    if (isRaining) {
+      const baseRain = Math.max(0, 20 - Math.abs(tempWithVariation - 15));
+      rainAmount = Math.round(baseRain * rainModifier * 1.5);
+    }
     
     data.push({
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -94,6 +173,27 @@ const HistoricalWeather: React.FC<HistoricalWeatherProps> = ({ location }) => {
   const [dataType, setDataType] = useState<"temperature" | "rainfall">("temperature");
   
   const historicalData = generateHistoricalData(parseInt(timeRange), location);
+  
+  const exportData = () => {
+    // Create CSV content
+    const headers = ["Date", "Temperature (°C)", "Rainfall (mm)"];
+    const csvContent = [
+      headers.join(","),
+      ...historicalData.map(item => 
+        [item.date, item.temperature, item.rainfall].join(",")
+      )
+    ].join("\n");
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `weather_history_${location.name}_${timeRange}days.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   
   return (
     <Card>
@@ -172,10 +272,14 @@ const HistoricalWeather: React.FC<HistoricalWeatherProps> = ({ location }) => {
           </ResponsiveContainer>
         </div>
         
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-4 gap-2">
           <Button variant="outline" size="sm" className="flex items-center">
             <Calendar className="mr-2 h-4 w-4" />
             View Full History
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center" onClick={exportData}>
+            <Download className="mr-2 h-4 w-4" />
+            Export Data
           </Button>
         </div>
       </CardContent>
