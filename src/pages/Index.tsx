@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getWeatherData, WeatherData, getWeatherConditionClass } from "@/services/weatherApi";
@@ -17,9 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Battery, Wifi, WifiOff, CloudRain } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useOfflineStorage } from "@/hooks/use-offline-storage";
-import RecentLocations from "@/components/RecentLocations";
 import WeatherAnimation from "@/components/WeatherAnimation";
-import WeatherInsights from "@/components/WeatherInsights";
 import MobileHeader from "@/components/MobileHeader";
 import { createClient } from '@supabase/supabase-js';
 
@@ -199,8 +196,6 @@ const Index = () => {
           </h1>
           <SearchBar onLocationSelect={handleLocationSelect} />
           
-          <RecentLocations onLocationSelect={handleLocationSelect} />
-          
           {!isOnline && (
             <Alert className="mt-4">
               <WifiOff className="h-4 w-4" />
@@ -223,14 +218,6 @@ const Index = () => {
                   location={weatherData.location}
                   alerts={mockAlerts}
                 />
-                {weatherData.current && (
-                  <div className="mt-4">
-                    <WeatherInsights 
-                      current={weatherData.current}
-                      condition={weatherData.current.condition.text}
-                    />
-                  </div>
-                )}
               </div>
               
               {!isMobile && (
