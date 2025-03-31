@@ -100,7 +100,7 @@
 }
 
 .weather-card {
-  @apply bg-card text-card-foreground rounded-lg shadow-md transition-all duration-300 hover:shadow-lg p-4 border border-border/30;
+  @apply bg-card/70 text-card-foreground rounded-lg shadow-md transition-all duration-300 hover:shadow-lg p-4 border border-border/30 backdrop-blur-sm;
 }
 
 .forecast-item {
@@ -123,15 +123,15 @@
 
 /* Dark mode weather gradients */
 .bg-gradient-clear {
-  @apply bg-gradient-to-br from-gray-900 via-blue-950 to-indigo-950;
+  @apply bg-gradient-to-br from-blue-900 via-blue-950 to-indigo-950;
 }
 
 .bg-gradient-cloudy {
-  @apply bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800;
+  @apply bg-gradient-to-br from-gray-800 via-slate-900 to-gray-700;
 }
 
 .bg-gradient-rainy {
-  @apply bg-gradient-to-br from-gray-900 via-blue-900 to-slate-800;
+  @apply bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800;
 }
 
 .bg-gradient-stormy {
@@ -139,7 +139,7 @@
 }
 
 .bg-gradient-snowy {
-  @apply bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-950;
+  @apply bg-gradient-to-br from-gray-900 via-slate-800 to-indigo-950;
 }
 
 /* Glass morphism for cards */
@@ -164,4 +164,23 @@
   border-radius: 50%;
   overflow: hidden;
   @apply bg-black text-white p-2 mx-auto border-4 border-gray-700;
+}
+
+/* Enhanced animation background styles */
+.weather-animation {
+  @apply fixed inset-0 pointer-events-none overflow-hidden;
+}
+
+.weather-animation.rain,
+.weather-animation.snow,
+.weather-animation.storm {
+  @apply bg-transparent;
+}
+
+.weather-animation.sunny {
+  @apply bg-transparent;
+}
+
+.weather-animation.cloudy {
+  @apply bg-transparent;
 }
