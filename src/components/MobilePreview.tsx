@@ -79,8 +79,8 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({ children }) => {
           <div 
             className="border-8 border-black rounded-[2rem] overflow-hidden bg-white shadow-xl transition-all duration-300 flex flex-col"
             style={{ 
-              width: `${device.width / 3}px`, 
-              height: `${device.height / 3}px`,
+              width: `${device.width / 2}px`, 
+              height: `${device.height / 2}px`,
               maxHeight: 'calc(100vh - 8rem)'
             }}
           >
@@ -92,7 +92,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({ children }) => {
                 src="/"
                 className="w-full h-full border-0 capacitor" 
                 style={{
-                  transform: `scale(${1/3})`,
+                  transform: `scale(${1/2})`,
                   transformOrigin: '0 0',
                   width: `${device.width}px`, 
                   height: `${device.height}px`,
