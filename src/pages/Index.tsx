@@ -14,32 +14,47 @@ import MultiCityComparison from "@/components/MultiCityComparison";
 import RadarMap from "@/components/RadarMap";
 import HistoricalWeather from "@/components/HistoricalWeather";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Battery, Wifi, WifiOff } from "lucide-react";
+import { Battery, Wifi, WifiOff, CloudRain } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useOfflineStorage } from "@/hooks/use-offline-storage";
+import RecentLocations from "@/components/RecentLocations";
+import WeatherAnimation from "@/components/WeatherAnimation";
+import WeatherInsights from "@/components/WeatherInsights";
+import MobileHeader from "@/components/MobileHeader";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
+const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Index = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<string>("New York"); // Default location
   const [backgroundClass, setBackgroundClass] = useState("bg-gradient-clear");
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [activeTab, setActiveTab] = useState("current");
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { 
+    saveWeatherData, 
+    getWeatherData: getStoredWeatherData, 
+    isDataFresh, 
+    isOnline,
+    lastUpdated 
+  } = useOfflineStorage();
 
   // Listen for online/offline events
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+    if (isOnline && weatherData) {
+      toast({
+        title: "You're back online",
+        description: "Weather data will be updated automatically.",
+      });
+      // Refresh data when coming back online
+      fetchWeatherData(location);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     // Check if the browser supports geolocation
@@ -64,25 +79,39 @@ const Index = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchWeatherData = async (locationQuery: string) => {
-    if (isOffline) {
-      toast({
-        title: "You're offline",
-        description: "Using cached weather data. Some information may not be up to date.",
-        variant: "default",
-      });
-      
-      // Try to retrieve cached data from localStorage
-      const cachedData = localStorage.getItem("weatherData");
+    if (!isOnline) {
+      // Try to load from cache when offline
+      const cachedData = getStoredWeatherData(locationQuery);
       if (cachedData) {
-        try {
-          const parsedData = JSON.parse(cachedData);
-          setWeatherData(parsedData);
-          setLocation(`${parsedData.location.name}, ${parsedData.location.country}`);
-          setBackgroundClass(getWeatherConditionClass(parsedData.current.condition));
-        } catch (error) {
-          console.error("Error parsing cached data:", error);
-        }
+        toast({
+          title: "You're offline",
+          description: "Using cached weather data from " + new Date(cachedData.timestamp).toLocaleString(),
+        });
+        
+        setWeatherData(cachedData.data);
+        setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
+        setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
+      } else {
+        toast({
+          title: "Offline mode",
+          description: "No cached data available for this location.",
+          variant: "destructive",
+        });
       }
+      return;
+    }
+    
+    // Check if we have fresh cached data to avoid unnecessary API calls
+    const cachedData = getStoredWeatherData(locationQuery);
+    if (cachedData && isDataFresh(cachedData.timestamp)) {
+      setWeatherData(cachedData.data);
+      setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
+      setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
+      
+      toast({
+        title: "Using cached data",
+        description: "Last updated " + new Date(cachedData.timestamp).toLocaleTimeString(),
+      });
       
       return;
     }
@@ -97,9 +126,19 @@ const Index = () => {
       const bgClass = getWeatherConditionClass(data.current.condition);
       setBackgroundClass(bgClass);
       
-      // Cache the weather data in localStorage for offline access
-      localStorage.setItem("weatherData", JSON.stringify(data));
-      localStorage.setItem("lastWeatherUpdate", new Date().toISOString());
+      // Cache the weather data for offline access
+      saveWeatherData(locationQuery, data);
+      
+      // Save to Supabase if user is authenticated
+      const { data: session } = await supabase.auth.getSession();
+      if (session?.session?.user) {
+        await supabase.from('recent_searches').upsert({
+          user_id: session.session.user.id,
+          location: `${data.location.name}, ${data.location.country}`,
+          location_key: locationQuery,
+          searched_at: new Date().toISOString()
+        });
+      }
       
     } catch (error) {
       console.error("Error fetching weather data:", error);
@@ -110,21 +149,16 @@ const Index = () => {
       });
       
       // Try to retrieve cached data if network request fails
-      const cachedData = localStorage.getItem("weatherData");
+      const cachedData = getStoredWeatherData(locationQuery);
       if (cachedData) {
-        try {
-          const parsedData = JSON.parse(cachedData);
-          setWeatherData(parsedData);
-          setLocation(`${parsedData.location.name}, ${parsedData.location.country}`);
-          setBackgroundClass(getWeatherConditionClass(parsedData.current.condition));
-          
-          toast({
-            title: "Using cached data",
-            description: "Showing last saved weather information.",
-          });
-        } catch (error) {
-          console.error("Error parsing cached data:", error);
-        }
+        setWeatherData(cachedData.data);
+        setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
+        setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
+        
+        toast({
+          title: "Using cached data",
+          description: "Showing last saved weather information.",
+        });
       }
     } finally {
       setIsLoading(false);
@@ -148,7 +182,16 @@ const Index = () => {
   ] : [];
 
   return (
-    <div className={`min-h-screen py-8 transition-all duration-500 ${backgroundClass}`}>
+    <div className={`min-h-screen py-8 transition-all duration-500 ${backgroundClass} relative`}>
+      {weatherData && (
+        <WeatherAnimation 
+          condition={weatherData.current.condition.text} 
+          className="absolute inset-0 pointer-events-none" 
+        />
+      )}
+      
+      {isMobile && <MobileHeader />}
+      
       <div className="container max-w-5xl mx-auto px-4">
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
@@ -156,7 +199,9 @@ const Index = () => {
           </h1>
           <SearchBar onLocationSelect={handleLocationSelect} />
           
-          {isOffline && (
+          <RecentLocations onLocationSelect={handleLocationSelect} />
+          
+          {!isOnline && (
             <Alert className="mt-4">
               <WifiOff className="h-4 w-4" />
               <AlertTitle>Offline Mode</AlertTitle>
@@ -178,6 +223,14 @@ const Index = () => {
                   location={weatherData.location}
                   alerts={mockAlerts}
                 />
+                {weatherData.current && (
+                  <div className="mt-4">
+                    <WeatherInsights 
+                      current={weatherData.current}
+                      condition={weatherData.current.condition.text}
+                    />
+                  </div>
+                )}
               </div>
               
               {!isMobile && (
@@ -246,6 +299,9 @@ const Index = () => {
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>Data powered by WeatherAPI.com</p>
           <p className="mt-1">© {new Date().getFullYear()} Breezy Weather</p>
+          {lastUpdated && (
+            <p className="mt-1 text-xs">Last updated: {lastUpdated.toLocaleString()}</p>
+          )}
         </footer>
       </div>
     </div>

@@ -64,3 +64,74 @@
     --safe-area-inset-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* Weather Animation Styles */
+.weather-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Rain animation */
+.weather-animation.rain {
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,100,0.05) 100%);
+}
+
+/* Snow animation */
+.weather-animation.snow {
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.03) 100%);
+}
+
+/* Device rotation effect */
+.device-rotate-enter {
+  animation: device-rotate-in 0.5s ease-out forwards;
+}
+
+.device-rotate-exit {
+  animation: device-rotate-out 0.5s ease-in forwards;
+}
+
+@keyframes device-rotate-in {
+  0% { transform: rotate(0deg) scale(0.9); opacity: 0; }
+  100% { transform: rotate(90deg) scale(1); opacity: 1; }
+}
+
+@keyframes device-rotate-out {
+  0% { transform: rotate(90deg) scale(1); opacity: 1; }
+  100% { transform: rotate(0deg) scale(0.9); opacity: 0; }
+}
+
+/* Loader animation for offline mode */
+.offline-loader {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #007bff;
+  animation: offline-spin 1s infinite linear;
+}
+
+@keyframes offline-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Refresh indicator */
+.pull-to-refresh {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.pull-to-refresh.refreshing {
+  height: 60px;
+}
