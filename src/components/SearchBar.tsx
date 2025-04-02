@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { useDebounce } from "@/hooks/use-debounce";
 import VoiceSearch from "@/components/VoiceSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { toast } from "sonner";
 
 interface SearchResult {
   id: string;
@@ -68,11 +69,22 @@ const SearchBar: React.FC<SearchBarProps> = ({ onLocationSelect }) => {
       }
       
       const data = await response.json();
+      
+      if (data.length === 0) {
+        toast.error("Location not found", {
+          description: `We couldn't find "${searchQuery}". Please check the spelling or try a different location.`,
+          duration: 5000,
+        });
+      }
+      
       setResults(data);
-      setIsResultsOpen(true);
+      setIsResultsOpen(data.length > 0);
     } catch (error) {
       console.error("Error searching locations:", error);
       setResults([]);
+      toast.error("Search failed", {
+        description: "There was a problem connecting to the weather service. Please try again later.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -89,9 +101,26 @@ const SearchBar: React.FC<SearchBarProps> = ({ onLocationSelect }) => {
     searchLocations(transcript);
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim().length >= 2) {
+      if (results.length > 0) {
+        // If we have search results, use the first one
+        handleLocationClick(results[0]);
+      } else {
+        // If no results but user is trying to submit, search again
+        searchLocations(query);
+      }
+    } else if (query.trim() !== "") {
+      toast.error("Search query too short", {
+        description: "Please enter at least 2 characters to search for a location.",
+      });
+    }
+  };
+
   return (
     <div className="relative w-full max-w-lg mx-auto" ref={resultsRef}>
-      <div className="flex items-center gap-2">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <div className="relative flex-1">
           <Input
             type="text"
@@ -102,12 +131,20 @@ const SearchBar: React.FC<SearchBarProps> = ({ onLocationSelect }) => {
             className="pr-10 rounded-full border-input"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Search className="h-4 w-4 text-muted-foreground" />
+            {isLoading ? (
+              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Search className="h-4 w-4 text-muted-foreground" />
+            )}
           </div>
         </div>
+        <Button type="submit" size="icon" variant="ghost" className="rounded-full">
+          <Search className="h-4 w-4" />
+          <span className="sr-only">Search</span>
+        </Button>
         <VoiceSearch onSearch={handleVoiceSearch} />
         <ThemeToggle />
-      </div>
+      </form>
       
       {isResultsOpen && results.length > 0 && (
         <Card className="absolute z-50 w-full mt-1 p-2 max-h-60 overflow-auto shadow-lg">

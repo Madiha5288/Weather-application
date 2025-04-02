@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getWeatherData, WeatherData, getWeatherConditionClass } from "@/services/weatherApi";
@@ -13,12 +14,15 @@ import MultiCityComparison from "@/components/MultiCityComparison";
 import RadarMap from "@/components/RadarMap";
 import HistoricalWeather from "@/components/HistoricalWeather";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Battery, Wifi, WifiOff, CloudRain } from 'lucide-react';
+import { Battery, Wifi, WifiOff, CloudRain, AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useOfflineStorage } from "@/hooks/use-offline-storage";
 import WeatherAnimation from "@/components/WeatherAnimation";
 import MobileHeader from "@/components/MobileHeader";
 import { createClient } from '@supabase/supabase-js';
+import { toast } from "sonner";
+import GeolocationPrompt from "@/components/GeolocationPrompt";
+import NetworkError from "@/components/NetworkError";
 
 // Initialize Supabase client
 const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
@@ -31,8 +35,10 @@ const Index = () => {
   const [location, setLocation] = useState<string>("New York"); // Default location
   const [backgroundClass, setBackgroundClass] = useState("bg-gradient-clear");
   const [activeTab, setActiveTab] = useState("current");
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [networkError, setNetworkError] = useState<string | null>(null);
   const isMobile = useIsMobile();
-  const { toast } = useToast();
+  const { toast: toastUi } = useToast();
   const { 
     saveWeatherData, 
     getWeatherData: getStoredWeatherData, 
@@ -44,44 +50,83 @@ const Index = () => {
   // Listen for online/offline events
   useEffect(() => {
     if (isOnline && weatherData) {
-      toast({
-        title: "You're back online",
+      toast.success("You're back online", {
         description: "Weather data will be updated automatically.",
       });
       // Refresh data when coming back online
       fetchWeatherData(location);
+    } else if (!isOnline) {
+      setNetworkError("You're currently offline. Using cached weather data.");
+    } else {
+      setNetworkError(null);
     }
   }, [isOnline]);
 
   useEffect(() => {
     // Check if the browser supports geolocation
     if (navigator.geolocation && !weatherData) {
+      setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           const locationString = `${latitude},${longitude}`;
           fetchWeatherData(locationString);
+          setGeoError(null);
         },
         (error) => {
           console.error("Geolocation error:", error);
-          fetchWeatherData(location); // Fallback to default location
+          
+          let errorMessage = "Unable to access your location.";
+          if (error.code === 1) {
+            errorMessage = "Location access was denied. Please enable location services in your browser settings.";
+          } else if (error.code === 2) {
+            errorMessage = "Your location information is unavailable.";
+          } else if (error.code === 3) {
+            errorMessage = "The request to get your location timed out.";
+          }
+          
+          setGeoError(errorMessage);
+          toast.error("Location access error", {
+            description: errorMessage,
+          });
+          
+          setIsLoading(false);
+          // We don't fetch default location right away, allowing user to choose
         }
       );
-    } else {
-      // Fallback to default location or if weatherData already exists
-      if (!weatherData) {
-        fetchWeatherData(location);
-      }
+    } else if (!navigator.geolocation && !weatherData) {
+      setGeoError("Your browser doesn't support geolocation.");
+      fetchWeatherData(location); // Fallback to default location
+    } else if (!weatherData) {
+      fetchWeatherData(location);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const retryGeolocation = () => {
+    if (navigator.geolocation) {
+      setIsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationString = `${latitude},${longitude}`;
+          fetchWeatherData(locationString);
+          setGeoError(null);
+        },
+        (error) => {
+          console.error("Geolocation error on retry:", error);
+          setGeoError("Still unable to access your location. Please try manual search.");
+          setIsLoading(false);
+        }
+      );
+    }
+  };
 
   const fetchWeatherData = async (locationQuery: string) => {
     if (!isOnline) {
       // Try to load from cache when offline
       const cachedData = getStoredWeatherData(locationQuery);
       if (cachedData) {
-        toast({
-          title: "You're offline",
+        toast.info("You're offline", {
           description: "Using cached weather data from " + new Date(cachedData.timestamp).toLocaleString(),
         });
         
@@ -89,10 +134,8 @@ const Index = () => {
         setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
         setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
       } else {
-        toast({
-          title: "Offline mode",
+        toast.error("Offline mode", {
           description: "No cached data available for this location.",
-          variant: "destructive",
         });
       }
       return;
@@ -105,8 +148,7 @@ const Index = () => {
       setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
       setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
       
-      toast({
-        title: "Using cached data",
+      toast.info("Using cached data", {
         description: "Last updated " + new Date(cachedData.timestamp).toLocaleTimeString(),
       });
       
@@ -114,6 +156,8 @@ const Index = () => {
     }
     
     setIsLoading(true);
+    setNetworkError(null);
+    
     try {
       const data = await getWeatherData(locationQuery, 21); // Get 21 days forecast
       setWeatherData(data);
@@ -139,11 +183,13 @@ const Index = () => {
       
     } catch (error) {
       console.error("Error fetching weather data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch weather data. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Set network error message
+      if (!navigator.onLine) {
+        setNetworkError("You're offline. Please check your internet connection.");
+      } else {
+        setNetworkError("Failed to fetch weather data. The server might be down or the location might not exist.");
+      }
       
       // Try to retrieve cached data if network request fails
       const cachedData = getStoredWeatherData(locationQuery);
@@ -152,8 +198,7 @@ const Index = () => {
         setLocation(`${cachedData.data.location.name}, ${cachedData.data.location.country}`);
         setBackgroundClass(getWeatherConditionClass(cachedData.data.current.condition));
         
-        toast({
-          title: "Using cached data",
+        toast.info("Using cached data", {
           description: "Showing last saved weather information.",
         });
       }
@@ -164,6 +209,18 @@ const Index = () => {
 
   const handleLocationSelect = (locationQuery: string) => {
     fetchWeatherData(locationQuery);
+  };
+
+  const handleManualSearch = () => {
+    setGeoError(null); // Hide geolocation prompt
+  };
+
+  const retryFetchWeather = () => {
+    if (weatherData) {
+      fetchWeatherData(`${weatherData.location.lat},${weatherData.location.lon}`);
+    } else {
+      fetchWeatherData(location);
+    }
   };
 
   // Demo weather alerts - in a real app, these would come from the API
@@ -177,6 +234,30 @@ const Index = () => {
       desc: "The National Weather Service has issued a Flash Flood Warning for this area due to heavy rainfall. Be prepared for rapidly rising water levels in low-lying areas."
     }
   ] : [];
+
+  // Show geolocation prompt when needed
+  if (geoError && !weatherData && !isLoading) {
+    return (
+      <div className={`min-h-screen py-8 transition-all duration-500 bg-gradient-clear relative`}>
+        <div className="container max-w-5xl mx-auto px-4 relative z-10">
+          <header className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
+              Breezy Weather
+            </h1>
+            <SearchBar onLocationSelect={handleLocationSelect} />
+          </header>
+          
+          <div className="flex flex-col items-center justify-center py-12">
+            <GeolocationPrompt 
+              onManualSearch={handleManualSearch}
+              onRetryGeolocation={retryGeolocation}
+              error={geoError}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen py-8 transition-all duration-500 ${backgroundClass} relative`}>
@@ -204,6 +285,13 @@ const Index = () => {
                 You're currently offline. Showing cached weather data from the last update.
               </AlertDescription>
             </Alert>
+          )}
+          
+          {networkError && (
+            <NetworkError 
+              message={networkError} 
+              onRetry={retryFetchWeather} 
+            />
           )}
         </header>
 
@@ -279,7 +367,7 @@ const Index = () => {
           </div>
         ) : (
           <div className="flex justify-center items-center min-h-[300px]">
-            <p className="text-lg text-muted-foreground">Loading weather data...</p>
+            <p className="text-lg text-muted-foreground">Enter a location to see weather information</p>
           </div>
         )}
         
