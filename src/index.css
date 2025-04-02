@@ -142,6 +142,52 @@
   @apply bg-gradient-to-br from-gray-900 via-slate-800 to-indigo-950;
 }
 
+/* Cloud animation */
+.cloud {
+  @apply absolute bg-white rounded-full opacity-70;
+  animation: drift 60s linear infinite;
+}
+
+@keyframes drift {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(1000%);
+  }
+}
+
+.cloud-1 {
+  width: 70px;
+  height: 30px;
+  top: 10%;
+  animation-duration: 90s;
+}
+
+.cloud-2 {
+  width: 100px;
+  height: 40px;
+  top: 20%;
+  animation-duration: 120s;
+  animation-delay: -20s;
+}
+
+.cloud-3 {
+  width: 120px;
+  height: 50px;
+  top: 5%;
+  animation-duration: 110s;
+  animation-delay: -50s;
+}
+
+.cloud-4 {
+  width: 60px;
+  height: 25px;
+  top: 15%;
+  animation-duration: 130s;
+  animation-delay: -70s;
+}
+
 /* Glass morphism for cards */
 .glass-card {
   @apply backdrop-blur-md bg-background/30 border border-white/10 shadow-lg;

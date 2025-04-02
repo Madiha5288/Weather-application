@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getWeatherData, WeatherData, getWeatherConditionClass } from "@/services/weatherApi";
@@ -14,7 +13,7 @@ import MultiCityComparison from "@/components/MultiCityComparison";
 import RadarMap from "@/components/RadarMap";
 import HistoricalWeather from "@/components/HistoricalWeather";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Battery, Wifi, WifiOff, CloudRain, AlertCircle } from 'lucide-react';
+import { Battery, Wifi, WifiOff, CloudRain, AlertCircle, Sun, Moon } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useOfflineStorage } from "@/hooks/use-offline-storage";
 import WeatherAnimation from "@/components/WeatherAnimation";
@@ -24,7 +23,6 @@ import { toast } from "sonner";
 import GeolocationPrompt from "@/components/GeolocationPrompt";
 import NetworkError from "@/components/NetworkError";
 
-// Initialize Supabase client
 const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
 const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -32,7 +30,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const Index = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [location, setLocation] = useState<string>("New York"); // Default location
+  const [location, setLocation] = useState<string>("New York");
   const [backgroundClass, setBackgroundClass] = useState("bg-gradient-clear");
   const [activeTab, setActiveTab] = useState("current");
   const [geoError, setGeoError] = useState<string | null>(null);
@@ -47,13 +45,11 @@ const Index = () => {
     lastUpdated 
   } = useOfflineStorage();
 
-  // Listen for online/offline events
   useEffect(() => {
     if (isOnline && weatherData) {
       toast.success("You're back online", {
         description: "Weather data will be updated automatically.",
       });
-      // Refresh data when coming back online
       fetchWeatherData(location);
     } else if (!isOnline) {
       setNetworkError("You're currently offline. Using cached weather data.");
@@ -63,7 +59,6 @@ const Index = () => {
   }, [isOnline]);
 
   useEffect(() => {
-    // Check if the browser supports geolocation
     if (navigator.geolocation && !weatherData) {
       setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
@@ -91,16 +86,15 @@ const Index = () => {
           });
           
           setIsLoading(false);
-          // We don't fetch default location right away, allowing user to choose
         }
       );
     } else if (!navigator.geolocation && !weatherData) {
       setGeoError("Your browser doesn't support geolocation.");
-      fetchWeatherData(location); // Fallback to default location
+      fetchWeatherData(location);
     } else if (!weatherData) {
       fetchWeatherData(location);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const retryGeolocation = () => {
     if (navigator.geolocation) {
@@ -123,7 +117,6 @@ const Index = () => {
 
   const fetchWeatherData = async (locationQuery: string) => {
     if (!isOnline) {
-      // Try to load from cache when offline
       const cachedData = getStoredWeatherData(locationQuery);
       if (cachedData) {
         toast.info("You're offline", {
@@ -141,7 +134,6 @@ const Index = () => {
       return;
     }
     
-    // Check if we have fresh cached data to avoid unnecessary API calls
     const cachedData = getStoredWeatherData(locationQuery);
     if (cachedData && isDataFresh(cachedData.timestamp)) {
       setWeatherData(cachedData.data);
@@ -159,18 +151,15 @@ const Index = () => {
     setNetworkError(null);
     
     try {
-      const data = await getWeatherData(locationQuery, 21); // Get 21 days forecast
+      const data = await getWeatherData(locationQuery, 21);
       setWeatherData(data);
       setLocation(`${data.location.name}, ${data.location.country}`);
       
-      // Set background based on current weather condition
       const bgClass = getWeatherConditionClass(data.current.condition);
       setBackgroundClass(bgClass);
       
-      // Cache the weather data for offline access
       saveWeatherData(locationQuery, data);
       
-      // Save to Supabase if user is authenticated
       const { data: session } = await supabase.auth.getSession();
       if (session?.session?.user) {
         await supabase.from('recent_searches').upsert({
@@ -184,14 +173,12 @@ const Index = () => {
     } catch (error) {
       console.error("Error fetching weather data:", error);
       
-      // Set network error message
       if (!navigator.onLine) {
         setNetworkError("You're offline. Please check your internet connection.");
       } else {
         setNetworkError("Failed to fetch weather data. The server might be down or the location might not exist.");
       }
       
-      // Try to retrieve cached data if network request fails
       const cachedData = getStoredWeatherData(locationQuery);
       if (cachedData) {
         setWeatherData(cachedData.data);
@@ -212,7 +199,7 @@ const Index = () => {
   };
 
   const handleManualSearch = () => {
-    setGeoError(null); // Hide geolocation prompt
+    setGeoError(null);
   };
 
   const retryFetchWeather = () => {
@@ -223,7 +210,6 @@ const Index = () => {
     }
   };
 
-  // Demo weather alerts - in a real app, these would come from the API
   const mockAlerts = weatherData?.current?.condition?.text?.toLowerCase().includes('rain') ? [
     {
       headline: "Flash Flood Warning",
@@ -235,7 +221,42 @@ const Index = () => {
     }
   ] : [];
 
-  // Show geolocation prompt when needed
+  const isDay = weatherData?.current?.is_day === 1;
+
+  const getDayNightBackground = () => {
+    if (!weatherData) return "bg-gradient-to-b from-blue-900 to-indigo-900";
+    
+    const isDaytime = weatherData.current.is_day === 1;
+    const condition = weatherData.current.condition.text.toLowerCase();
+    const cloudCover = weatherData.current.cloud;
+    
+    if (isDaytime) {
+      if (condition.includes('cloud') || cloudCover > 50) {
+        return "bg-gradient-to-b from-blue-300 to-blue-100 relative";
+      } else if (condition.includes('rain') || condition.includes('drizzle')) {
+        return "bg-gradient-to-b from-gray-400 to-blue-200 relative";
+      } else if (condition.includes('snow')) {
+        return "bg-gradient-to-b from-blue-100 to-gray-100 relative";
+      } else if (condition.includes('storm') || condition.includes('thunder')) {
+        return "bg-gradient-to-b from-gray-700 to-gray-500 relative";
+      } else {
+        return "bg-gradient-to-b from-sky-400 to-blue-300 relative";
+      }
+    } else {
+      if (condition.includes('cloud') || cloudCover > 50) {
+        return "bg-gradient-to-b from-gray-900 to-blue-950 relative";
+      } else if (condition.includes('rain') || condition.includes('drizzle')) {
+        return "bg-gradient-to-b from-gray-900 to-blue-900 relative";
+      } else if (condition.includes('snow')) {
+        return "bg-gradient-to-b from-blue-950 to-gray-900 relative";
+      } else if (condition.includes('storm') || condition.includes('thunder')) {
+        return "bg-gradient-to-b from-gray-950 to-blue-950 relative";
+      } else {
+        return "bg-gradient-to-b from-indigo-950 to-blue-950 relative";
+      }
+    }
+  };
+
   if (geoError && !weatherData && !isLoading) {
     return (
       <div className={`min-h-screen py-8 transition-all duration-500 bg-gradient-clear relative`}>
@@ -260,7 +281,7 @@ const Index = () => {
   }
 
   return (
-    <div className={`min-h-screen py-8 transition-all duration-500 ${backgroundClass} relative`}>
+    <div className={`min-h-screen py-8 transition-all duration-1000 ${getDayNightBackground()}`}>
       {weatherData && (
         <WeatherAnimation 
           condition={weatherData.current.condition.text} 
@@ -274,6 +295,14 @@ const Index = () => {
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
             Breezy Weather
+            {weatherData && (
+              <span className="inline-block ml-2">
+                {isDay ? 
+                  <Sun className="h-6 w-6 inline-block text-yellow-400" /> : 
+                  <Moon className="h-6 w-6 inline-block text-blue-200" />
+                }
+              </span>
+            )}
           </h1>
           <SearchBar onLocationSelect={handleLocationSelect} />
           
