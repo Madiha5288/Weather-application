@@ -5,14 +5,12 @@ import {
   Droplets, Wind, 
   Thermometer, Cloud, Eye, 
   ArrowUpRight, CalendarDays,
-  BellRing, AlertTriangle,
-  Sun, Moon
+  BellRing, AlertTriangle
 } from "lucide-react";
 import { CurrentWeather as CurrentWeatherType, Location, getWeatherIcon } from "@/services/weatherApi";
 import WeatherIcon from "./WeatherIcon";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import WeatherInsights from "./WeatherInsights";
-import { motion } from "framer-motion";
 
 interface CurrentWeatherProps {
   current: CurrentWeatherType;
@@ -25,47 +23,8 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ current, location, aler
   const weatherIconName = getWeatherIcon(current.condition, isDay);
   
   return (
-    <Card className="overflow-hidden relative">
-      {/* Day/Night Background */}
-      <div 
-        className={`absolute inset-0 ${isDay ? 'bg-gradient-to-b from-blue-400 to-blue-300' : 'bg-gradient-to-b from-indigo-900 to-purple-900'} opacity-30`}
-      />
-      
-      {/* Clouds (only shown during day) */}
-      {isDay && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div 
-              key={i}
-              className="absolute bg-white rounded-full opacity-70"
-              style={{
-                width: 60 + (i * 20),
-                height: 30 + (i * 10),
-                top: `${10 + (i * 15)}%`,
-                left: `${(i * 20) % 100}%`,
-              }}
-              animate={{
-                x: [0, 30, 0, -30, 0],
-              }}
-              transition={{
-                duration: 40 + (i * 10),
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
-          ))}
-        </div>
-      )}
-      
-      {/* Day/Night Indicator */}
-      <div className="absolute top-4 right-4 z-10">
-        {isDay ? 
-          <Sun className="h-6 w-6 text-yellow-400" /> : 
-          <Moon className="h-6 w-6 text-blue-100" />
-        }
-      </div>
-      
-      <CardContent className="p-6 relative z-10">
+    <Card className="overflow-hidden">
+      <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col space-y-4">
             <div className="flex flex-col space-y-1">
