@@ -1,5 +1,5 @@
 
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 // Weather API base URL and key
 const API_KEY = "b9d8796e16e84432a5f120309252703";
@@ -130,8 +130,10 @@ const handleApiError = (error: any) => {
     errorMessage = error.message;
   }
   
-  toast.error("Weather data error", {
+  toast({
+    title: "Error",
     description: errorMessage,
+    variant: "destructive",
   });
   
   throw error;
@@ -147,13 +149,6 @@ export const searchLocations = async (query: string): Promise<SearchResult[]> =>
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    
-    if (data.length === 0) {
-      toast.error("Location not found", {
-        description: `We couldn't find "${query}". Please check the spelling or try a different location.`,
-      });
-    }
-    
     return data;
   } catch (error) {
     handleApiError(error);
@@ -173,13 +168,7 @@ export const getWeatherData = async (
     
     if (!response.ok) {
       const errorData = await response.json();
-      const errorMessage = errorData.error?.message || `HTTP error! status: ${response.status}`;
-      
-      toast.error("Weather data error", {
-        description: errorMessage,
-      });
-      
-      throw new Error(errorMessage);
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();

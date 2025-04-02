@@ -17,7 +17,7 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <TooltipProvider>
         <Toaster />
-        <Sonner position="top-center" closeButton richColors />
+        <Sonner />
         <MobileWrapper>
           <BrowserRouter>
             <Routes>

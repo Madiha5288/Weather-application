@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -76,69 +77,67 @@ const WeatherAnimation: React.FC<WeatherAnimationProps> = ({ condition, classNam
   if (conditionLower.includes('sunny') || conditionLower.includes('clear')) {
     return (
       <div className={`weather-animation sunny ${className} relative overflow-hidden w-full h-full`}>
-        {/* Soft glowing sun */}
         <motion.div 
-          className="absolute top-[10%] right-[10%] rounded-full opacity-70"
-          style={{
-            width: size === 'small' ? 60 : 100,
-            height: size === 'small' ? 60 : 100,
-            background: 'radial-gradient(circle, rgba(255,222,89,0.8) 0%, rgba(255,182,41,0.4) 50%, rgba(255,182,41,0) 70%)',
-            boxShadow: '0 0 40px rgba(255, 222, 89, 0.4)'
-          }}
+          className="absolute top-[5%] right-[5%] sm:top-10 sm:right-10 md:top-20 md:right-20 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-yellow-300 rounded-full z-0"
           animate={{ 
-            scale: [1, 1.05, 1],
-            opacity: [0.7, 0.8, 0.7]
+            scale: [1, 1.1, 1],
+            opacity: [0.7, 0.9, 0.7]
           }}
           transition={{ 
-            duration: 8,
+            duration: 6,
             repeat: Infinity,
             ease: 'easeInOut'
           }}
-        />
-        
-        {/* Gentle light rays */}
-        <div className="absolute inset-0">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <motion.div
-              key={`gentle-ray-${i}`}
-              className="absolute opacity-20"
-              style={{
-                top: '0',
-                right: '10%',
-                width: '150%',
-                height: size === 'small' ? 300 : 500,
-                background: 'linear-gradient(to bottom, rgba(255,222,89,0.2) 0%, rgba(255,222,89,0) 100%)',
-                transformOrigin: 'top right',
-                transform: `rotate(${20 + i * 15}deg)`,
+        >
+          {Array.from({ length: 8 }).map((_, i) => (
+            <motion.div 
+              key={i}
+              className="absolute bg-yellow-300 opacity-60"
+              style={{ 
+                top: '50%',
+                left: '50%',
+                width: size === 'small' ? '150%' : '200%',
+                height: 2,
+                transformOrigin: 'left center',
+                transform: `rotate(${i * 45}deg) translateX(${size === 'small' ? 12 : 16}px)`,
               }}
-              animate={{
-                opacity: [0.1, 0.2, 0.1]
+              animate={{ 
+                opacity: [0.2, 0.6, 0.2],
+                scale: [0.8, 1, 0.8]
               }}
-              transition={{
-                duration: 6 + i,
+              transition={{ 
+                duration: 3,
                 repeat: Infinity,
-                repeatType: 'reverse',
+                delay: i * 0.2,
                 ease: 'easeInOut'
               }}
             />
           ))}
-        </div>
+        </motion.div>
         
-        {/* Subtle warm glow overlay */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: 'radial-gradient(circle at top right, rgba(255,222,89,0.15) 0%, rgba(255,182,41,0.05) 40%, rgba(0,0,0,0) 70%)',
-          }}
-          animate={{
-            opacity: [0.7, 0.9, 0.7]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut'
-          }}
-        />
+        {/* Light rays */}
+        {Array.from({ length: 5 }).map((_, i) => (
+          <motion.div
+            key={`ray-${i}`}
+            className="absolute bg-yellow-100/20 origin-center"
+            style={{
+              width: '200%',
+              height: 100 + i * 30,
+              top: `${10 + i * 15}%`,
+              left: '-50%',
+              transform: `rotate(${i * 7}deg)`
+            }}
+            animate={{
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'easeInOut'
+            }}
+          />
+        ))}
       </div>
     );
   }
