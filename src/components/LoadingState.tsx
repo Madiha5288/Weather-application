@@ -2,17 +2,10 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LoaderCircle } from "lucide-react";
 
 const LoadingState: React.FC = () => {
   return (
     <div className="space-y-6 w-full max-w-5xl mx-auto px-4">
-      <div className="flex flex-col items-center justify-center mb-8">
-        <LoaderCircle className="h-12 w-12 text-primary animate-spin mb-4" />
-        <p className="text-lg font-medium">Loading weather data...</p>
-        <p className="text-sm text-muted-foreground">Please wait while we fetch the latest information</p>
-      </div>
-      
       {/* Current Weather Skeleton */}
       <Card>
         <CardContent className="p-6">
