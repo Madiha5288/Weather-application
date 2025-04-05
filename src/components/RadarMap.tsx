@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, CloudRain } from "lucide-react";
+import { MapPin, CloudRain, Radar, Satellite, Map } from "lucide-react";
 
 interface RadarMapProps {
   latitude: number;
@@ -11,24 +11,27 @@ interface RadarMapProps {
 
 const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
   const [mapType, setMapType] = useState<"standard" | "radar" | "satellite">("radar");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   
-  // Function to get the appropriate map URL based on selected type
+  // Generate appropriate map URL based on selected type
   const getMapUrl = () => {
-    // Secure Weather API map base URLs
-    const mapBaseUrl = "https://tile.openweathermap.org/map";
-    const weatherApiKey = "b9d8796e16e84432a5f120309252703"; // Already existing API key in project
-    
-    // For demo purposes, using different static map sources
     switch (mapType) {
       case "radar":
-        return `https://maps.aerisapi.com/demoid_demoid/radar/{z}/{x}/{y}/current.png`;
+        return `https://www.rainviewer.com/map.html?loc=${latitude},${longitude},6&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=0&rmt=1&c=1&o=83&lm=0&th=0&sm=0&sn=1`;
       case "satellite":
-        return `https://sat.aerisapi.com/demoid_demoid/satellite/{z}/{x}/{y}/current.jpg`;
+        return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d10000!2d${longitude}!3d${latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2sus!4v1617547244789!5m2!1sen!2sus`;
       case "standard":
       default:
-        return `https://tile.openstreetmap.org/{z}/{x}/{y}.png`;
+        return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d10000!2d${longitude}!3d${latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1617547244789!5m2!1sen!2sus`;
     }
   };
+
+  useEffect(() => {
+    // Update iframe src when mapType changes
+    if (iframeRef.current) {
+      iframeRef.current.src = getMapUrl();
+    }
+  }, [mapType, latitude, longitude]);
 
   return (
     <Card className="overflow-hidden">
@@ -41,9 +44,18 @@ const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
       <Tabs defaultValue="radar" onValueChange={(value) => setMapType(value as any)}>
         <div className="px-6 pt-2">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="radar">Radar</TabsTrigger>
-            <TabsTrigger value="satellite">Satellite</TabsTrigger>
-            <TabsTrigger value="standard">Standard</TabsTrigger>
+            <TabsTrigger value="radar" className="flex items-center justify-center">
+              <Radar className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Radar</span>
+            </TabsTrigger>
+            <TabsTrigger value="satellite" className="flex items-center justify-center">
+              <Satellite className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Satellite</span>
+            </TabsTrigger>
+            <TabsTrigger value="standard" className="flex items-center justify-center">
+              <Map className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Standard</span>
+            </TabsTrigger>
           </TabsList>
         </div>
         
@@ -58,11 +70,13 @@ const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
 
           <div className="aspect-video mt-2 relative bg-muted/50 overflow-hidden flex items-center justify-center">
             <iframe 
-              src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=8&output=embed`} 
+              ref={iframeRef}
+              src={getMapUrl()}
               className="w-full h-full border-0" 
               allowFullScreen
               aria-hidden="false"
               title="Weather Map"
+              loading="lazy"
             />
             <div className="absolute bottom-2 right-2 bg-background/80 px-2 py-1 rounded text-xs flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
@@ -71,7 +85,9 @@ const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
           </div>
           
           <div className="p-4 text-xs text-center text-muted-foreground">
-            Note: Weather radar data refreshes every 10 minutes
+            {mapType === "radar" 
+              ? "Radar data refreshes every 10 minutes" 
+              : "Map data provided by Google Maps"}
           </div>
         </CardContent>
       </Tabs>
