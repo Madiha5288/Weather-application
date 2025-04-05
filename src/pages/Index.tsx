@@ -352,7 +352,8 @@ const Index = () => {
               <TabsContent value="map" className="mt-0">
                 <RadarMap 
                   latitude={weatherData.location.lat} 
-                  longitude={weatherData.location.lon} 
+                  longitude={weatherData.location.lon}
+                  isDay={weatherData.current.is_day === 1}
                 />
               </TabsContent>
               

@@ -7,9 +7,10 @@ import { MapPin, CloudRain, Radar, Satellite, Map } from "lucide-react";
 interface RadarMapProps {
   latitude: number;
   longitude: number;
+  isDay?: boolean; // Optional prop to determine day/night
 }
 
-const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
+const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude, isDay = true }) => {
   const [mapType, setMapType] = useState<"standard" | "radar" | "satellite">("radar");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
