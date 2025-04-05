@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,8 +40,8 @@ const RadarMap: React.FC<RadarMapProps> = ({
     }
   }, [mapType, latitude, longitude]);
 
-  // Check if condition contains "sunny" or "clear"
-  const isSunny = condition.toLowerCase().includes("sunny") || condition.toLowerCase().includes("clear");
+  // Check if condition contains "sunny" ONLY, removing "clear" from the condition
+  const isSunny = condition.toLowerCase().includes("sunny");
 
   return (
     <Card className="overflow-hidden">
