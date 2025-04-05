@@ -1,22 +1,15 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, CloudRain, Radar, Satellite, Map, Sun, Moon } from "lucide-react";
-import { motion } from "framer-motion";
+import { MapPin, CloudRain, Radar, Satellite, Map } from "lucide-react";
 
 interface RadarMapProps {
   latitude: number;
   longitude: number;
-  condition?: string;
-  isDay?: boolean;
 }
 
-const RadarMap: React.FC<RadarMapProps> = ({ 
-  latitude, 
-  longitude, 
-  condition = "", 
-  isDay = true 
-}) => {
+const RadarMap: React.FC<RadarMapProps> = ({ latitude, longitude }) => {
   const [mapType, setMapType] = useState<"standard" | "radar" | "satellite">("radar");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
@@ -40,52 +33,12 @@ const RadarMap: React.FC<RadarMapProps> = ({
     }
   }, [mapType, latitude, longitude]);
 
-  // Check if condition contains "sunny" ONLY, removing "clear" from the condition
-  const isSunny = condition.toLowerCase().includes("sunny");
-
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-0">
         <CardTitle className="flex items-center">
           <CloudRain className="mr-2 h-5 w-5" />
           Weather Radar & Maps
-          
-          {/* Show sun or moon icon based on time of day and condition */}
-          {isSunny && (
-            <div className="ml-auto">
-              {isDay ? (
-                <motion.div
-                  animate={{ 
-                    rotate: 360,
-                    scale: [1, 1.1, 1],
-                    opacity: [0.9, 1, 0.9]
-                  }}
-                  transition={{ 
-                    rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                    opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="relative"
-                >
-                  <Sun className="h-7 w-7 text-amber-400" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  animate={{ 
-                    rotate: [-5, 5, -5],
-                    opacity: [0.7, 0.9, 0.7]
-                  }}
-                  transition={{ 
-                    rotate: { duration: 10, repeat: Infinity, ease: "easeInOut" },
-                    opacity: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="relative"
-                >
-                  <Moon className="h-6 w-6 text-slate-300" />
-                </motion.div>
-              )}
-            </div>
-          )}
         </CardTitle>
       </CardHeader>
       <Tabs defaultValue="radar" onValueChange={(value) => setMapType(value as any)}>
