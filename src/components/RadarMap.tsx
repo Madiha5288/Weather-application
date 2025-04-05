@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,10 +40,8 @@ const RadarMap: React.FC<RadarMapProps> = ({
     }
   }, [mapType, latitude, longitude]);
 
-  // Check for conditions that should show sun/moon
-  const isSunnyCondition = condition.toLowerCase().includes("sunny");
-  const isClearCondition = condition.toLowerCase().includes("clear");
-  const shouldShowCelestialBody = isSunnyCondition || isClearCondition;
+  // Check if condition contains "sunny" ONLY, removing "clear" from the condition
+  const isSunny = condition.toLowerCase().includes("sunny");
 
   return (
     <Card className="overflow-hidden">
@@ -54,7 +51,7 @@ const RadarMap: React.FC<RadarMapProps> = ({
           Weather Radar & Maps
           
           {/* Show sun or moon icon based on time of day and condition */}
-          {shouldShowCelestialBody && (
+          {isSunny && (
             <div className="ml-auto">
               {isDay ? (
                 <motion.div
