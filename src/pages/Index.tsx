@@ -307,25 +307,6 @@ const Index = () => {
               <WeatherAlerts alerts={mockAlerts} />
             )}
             
-            <Tabs defaultValue="hourly" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="hourly">Hourly Forecast</TabsTrigger>
-                <TabsTrigger value="daily">Daily Forecast</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="hourly" className="mt-0">
-                <HourlyForecast 
-                  hourlyData={weatherData.forecast.forecastday.flatMap(day => day.hour)} 
-                />
-              </TabsContent>
-              
-              <TabsContent value="daily" className="mt-0">
-                <DailyForecast 
-                  days={weatherData.forecast.forecastday} 
-                />
-              </TabsContent>
-            </Tabs>
-            
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="map">Radar Map</TabsTrigger>
