@@ -24,7 +24,7 @@ const DailyForecast: React.FC<DailyForecastProps> = ({ days }) => {
         <Tabs defaultValue="7day">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="7day">7-Day</TabsTrigger>
-            <TabsTrigger value="21day">{fullForecast.length}-Day</TabsTrigger>
+            <TabsTrigger value="21day">21-Day</TabsTrigger>
           </TabsList>
           
           <TabsContent value="7day" className="mt-0">
