@@ -226,7 +226,7 @@ const Index = () => {
         <div className="container max-w-5xl mx-auto px-4 relative z-10">
           <header className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
-              Weather Application
+              Breezy Weather
             </h1>
             <SearchBar onLocationSelect={handleLocationSelect} />
           </header>
@@ -258,7 +258,7 @@ const Index = () => {
       <div className="container max-w-5xl mx-auto px-4 relative z-10">
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-foreground">
-            Weather Application
+            Breezy Weather
           </h1>
           <SearchBar onLocationSelect={handleLocationSelect} />
           
@@ -359,7 +359,7 @@ const Index = () => {
         
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>Data powered by WeatherAPI.com</p>
-          <p className="mt-1">© {new Date().getFullYear()} Weather Application</p>
+          <p className="mt-1">© {new Date().getFullYear()} Breezy Weather</p>
           {lastUpdated && (
             <p className="mt-1 text-xs">Last updated: {lastUpdated.toLocaleString()}</p>
           )}

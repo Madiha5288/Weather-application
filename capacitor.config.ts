@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.weatherapp.app',
-  appName: 'Weather Application',
+  appName: 'Breezy Weather',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

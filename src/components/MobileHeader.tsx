@@ -15,7 +15,7 @@ const MobileHeader: React.FC = () => {
   return (
     <div className="mobile-header bg-background/80 backdrop-blur-md px-4 py-2 fixed top-0 left-0 right-0 z-10 border-b">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-medium">Weather Application</div>
+        <div className="text-sm font-medium">Breezy Weather</div>
         <div className="flex items-center space-x-2">
           {!isOnline && <WifiOff className="h-4 w-4 text-red-500" />}
           <Signal className="h-4 w-4" />
