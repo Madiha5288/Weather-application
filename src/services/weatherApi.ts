@@ -164,7 +164,7 @@ export const searchLocations = async (query: string): Promise<SearchResult[]> =>
 // Get current weather and forecast data
 export const getWeatherData = async (
   query: string,
-  days: number = 7
+  days: number = 21 // Always default to 21 days
 ): Promise<WeatherData> => {
   try {
     const response = await fetch(

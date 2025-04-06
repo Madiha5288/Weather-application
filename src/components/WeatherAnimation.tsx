@@ -5,9 +5,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface WeatherAnimationProps {
   condition: string;
   className?: string;
+  isDay?: boolean;
 }
 
-const WeatherAnimation: React.FC<WeatherAnimationProps> = ({ condition, className = '' }) => {
+const WeatherAnimation: React.FC<WeatherAnimationProps> = ({ 
+  condition, 
+  className = '',
+  isDay = true
+}) => {
   const isMobile = useIsMobile();
   const conditionLower = condition.toLowerCase();
   const size = isMobile ? 'small' : 'normal';
@@ -72,8 +77,8 @@ const WeatherAnimation: React.FC<WeatherAnimationProps> = ({ condition, classNam
     );
   }
   
-  // Animation for sunny/clear
-  if (conditionLower.includes('sunny') || conditionLower.includes('clear')) {
+  // Animation for sunny/clear - only show during daytime
+  if ((conditionLower.includes('sunny') || conditionLower.includes('clear')) && isDay) {
     return (
       <div className={`weather-animation sunny ${className} relative overflow-hidden w-full h-full`}>
         {/* Soft glowing sun */}
@@ -139,6 +144,80 @@ const WeatherAnimation: React.FC<WeatherAnimationProps> = ({ condition, classNam
             ease: 'easeInOut'
           }}
         />
+      </div>
+    );
+  }
+  
+  // For clear night, show a different animation with a moon
+  if ((conditionLower.includes('sunny') || conditionLower.includes('clear')) && !isDay) {
+    return (
+      <div className={`weather-animation clear-night ${className} relative overflow-hidden w-full h-full`}>
+        {/* Moon */}
+        <motion.div 
+          className="absolute top-[10%] right-[10%] rounded-full opacity-80"
+          style={{
+            width: size === 'small' ? 50 : 80,
+            height: size === 'small' ? 50 : 80,
+            background: 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(240,240,255,0.5) 50%, rgba(220,220,250,0) 70%)',
+            boxShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
+          }}
+          animate={{ 
+            scale: [1, 1.03, 1],
+            opacity: [0.8, 0.85, 0.8]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+        />
+        
+        {/* Subtle night glow overlay */}
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle at top right, rgba(100,150,255,0.05) 0%, rgba(50,50,100,0.03) 40%, rgba(0,0,0,0) 70%)',
+          }}
+          animate={{
+            opacity: [0.7, 0.8, 0.7]
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+        />
+        
+        {/* Stars */}
+        {Array.from({ length: isMobile ? 15 : 30 }).map((_, i) => {
+          const size = Math.random() * 2 + 1;
+          return (
+            <motion.div
+              key={`star-${i}`}
+              className="absolute bg-white rounded-full"
+              style={{
+                width: size,
+                height: size,
+                top: `${Math.random() * 60}%`,
+                left: `${Math.random() * 100}%`,
+                opacity: Math.random() * 0.5 + 0.3
+              }}
+              animate={{
+                opacity: [
+                  Math.random() * 0.5 + 0.3,
+                  Math.random() * 0.8 + 0.5,
+                  Math.random() * 0.5 + 0.3
+                ]
+              }}
+              transition={{
+                duration: 1 + Math.random() * 3,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                ease: 'easeInOut'
+              }}
+            />
+          );
+        })}
       </div>
     );
   }

@@ -264,7 +264,8 @@ const Index = () => {
       {weatherData && (
         <WeatherAnimation 
           condition={weatherData.current.condition.text} 
-          className="absolute inset-0 pointer-events-none z-0" 
+          className="absolute inset-0 pointer-events-none z-0"
+          isDay={weatherData.current.is_day === 1} // Pass isDay prop
         />
       )}
       

@@ -11,9 +11,9 @@ interface DailyForecastProps {
 }
 
 const DailyForecast: React.FC<DailyForecastProps> = ({ days }) => {
-  // Split forecasts into 7-day and 21-day views
+  // Split forecasts into 7-day and full forecast views
   const shortTermForecast = days.slice(0, 7);
-  const longTermForecast = days;
+  const fullForecast = days; // Use all available days
   
   return (
     <Card>
@@ -24,7 +24,7 @@ const DailyForecast: React.FC<DailyForecastProps> = ({ days }) => {
         <Tabs defaultValue="7day">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="7day">7-Day</TabsTrigger>
-            <TabsTrigger value="21day">21-Day</TabsTrigger>
+            <TabsTrigger value="21day">{fullForecast.length}-Day</TabsTrigger>
           </TabsList>
           
           <TabsContent value="7day" className="mt-0">
@@ -32,7 +32,7 @@ const DailyForecast: React.FC<DailyForecastProps> = ({ days }) => {
           </TabsContent>
           
           <TabsContent value="21day" className="mt-0">
-            <ForecastList days={longTermForecast} detailed={false} />
+            <ForecastList days={fullForecast} detailed={false} />
           </TabsContent>
         </Tabs>
       </CardContent>
