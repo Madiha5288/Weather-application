@@ -12,6 +12,7 @@ import WeatherAlerts from "@/components/WeatherAlerts";
 import MultiCityComparison from "@/components/MultiCityComparison";
 import RadarMap from "@/components/RadarMap";
 import HistoricalWeather from "@/components/HistoricalWeather";
+import AIPrediction from "@/components/AIPrediction";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Battery, Wifi, WifiOff, CloudRain, AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -22,6 +23,7 @@ import { createClient } from '@supabase/supabase-js';
 import { toast } from "sonner";
 import GeolocationPrompt from "@/components/GeolocationPrompt";
 import NetworkError from "@/components/NetworkError";
+import { createModel } from "@/services/weatherModel";
 
 const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
 const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
@@ -46,6 +48,8 @@ const Index = () => {
   } = useOfflineStorage();
 
   useEffect(() => {
+    createModel();
+    
     if (isOnline && weatherData) {
       toast.success("You're back online", {
         description: "Weather data will be updated automatically.",
@@ -303,6 +307,8 @@ const Index = () => {
                 </div>
               )}
             </div>
+            
+            <AIPrediction currentWeather={weatherData.current} />
             
             {mockAlerts?.length > 0 && (
               <WeatherAlerts alerts={mockAlerts} />
