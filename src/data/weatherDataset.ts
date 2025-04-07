@@ -1,4 +1,3 @@
-
 import { WeatherData, SearchResult } from "@/services/weatherApi";
 
 // Sample locations for search
@@ -178,8 +177,7 @@ export const weatherDataset: Record<string, WeatherData> = {
           chance_of_rain: (i % 3 === 0 && h >= 14 && h <= 20) ? 70 : 0,
           chance_of_snow: 0,
           vis_km: 10,
-          uv: h >= 8 && h <= 16 ? 4 : 1,
-          time_epoch: Math.floor(Date.now() / 1000) + i * 24 * 60 * 60 + h * 60 * 60
+          uv: h >= 8 && h <= 16 ? 4 : 1
         }))
       }))
     }
@@ -274,8 +272,7 @@ export const weatherDataset: Record<string, WeatherData> = {
           chance_of_rain: (i % 2 === 0 && h >= 12 && h <= 18) ? 80 : 40,
           chance_of_snow: 0,
           vis_km: 9,
-          uv: h >= 8 && h <= 16 ? 3 : 1,
-          time_epoch: Math.floor(Date.now() / 1000) + i * 24 * 60 * 60 + h * 60 * 60
+          uv: h >= 8 && h <= 16 ? 3 : 1
         }))
       }))
     }
@@ -325,4 +322,3 @@ export const getWeatherForCoordinates = (lat: number, lon: number): WeatherData 
   // Default to New York if no match found
   return weatherDataset["40.71,-74.01"];
 };
-
