@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cpu, Lightbulb, Brain, Thermometer, Cloud, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
+import { Cpu, Lightbulb, Brain, Thermometer, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog, Sun } from 'lucide-react';
 import { WeatherPrediction, predictWeather, createModel } from '@/services/weatherModel';
 import { CurrentWeather } from '@/services/weatherApi';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,7 +46,7 @@ const AIPrediction: React.FC<AIPredictionProps> = ({ currentWeather }) => {
   const getPredictionIcon = (condition: string) => {
     switch (condition) {
       case 'clear':
-        return <Lightbulb className="h-5 w-5 text-yellow-500" />;
+        return <Sun className="h-5 w-5 text-yellow-500" />;
       case 'cloudy':
         return <Cloud className="h-5 w-5 text-gray-500" />;
       case 'rain':
@@ -56,7 +56,7 @@ const AIPrediction: React.FC<AIPredictionProps> = ({ currentWeather }) => {
       case 'snow':
         return <CloudSnow className="h-5 w-5 text-blue-300" />;
       case 'fog':
-        return <Cloud className="h-5 w-5 text-gray-400" />;
+        return <CloudFog className="h-5 w-5 text-gray-400" />;
       default:
         return <Brain className="h-5 w-5 text-primary" />;
     }
