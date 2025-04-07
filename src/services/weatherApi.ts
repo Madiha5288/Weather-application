@@ -1,9 +1,13 @@
-
 import { toast } from "sonner";
+import { findLocationInDataset, getWeatherForCoordinates, weatherDataset } from "@/data/weatherDataset";
 
 // Weather API base URL and key
 const API_KEY = "b9d8796e16e84432a5f120309252703";
 const BASE_URL = "https://api.weatherapi.com/v1";
+
+// Flag to control whether we use local data or API
+// This can be changed to true to use dataset instead of API
+const USE_DATASET = true;
 
 // Type definitions
 export interface Location {
@@ -141,6 +145,21 @@ const handleApiError = (error: any) => {
 export const searchLocations = async (query: string): Promise<SearchResult[]> => {
   if (!query || query.length < 2) return [];
   
+  if (USE_DATASET) {
+    console.log("Using dataset for location search:", query);
+    const results = findLocationInDataset(query);
+    
+    if (results.length === 0) {
+      toast.error("Location not found", {
+        description: `We couldn't find "${query}" in our dataset. Please check the spelling or try a different location.`,
+      });
+    }
+    
+    // Add delay to simulate API call
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return results;
+  }
+  
   try {
     const response = await fetch(`${BASE_URL}/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`);
     if (!response.ok) {
@@ -166,6 +185,31 @@ export const getWeatherData = async (
   query: string,
   days: number = 21 // Always default to 21 days
 ): Promise<WeatherData> => {
+  if (USE_DATASET) {
+    console.log("Using dataset for weather data:", query);
+    
+    // Add delay to simulate API call
+    await new Promise(resolve => setTimeout(resolve, 700));
+    
+    // Check if it's coordinates
+    if (query.includes(',')) {
+      const [lat, lon] = query.split(',').map(parseFloat);
+      const data = getWeatherForCoordinates(lat, lon);
+      if (data) return data;
+    }
+    
+    // For place names, search and use first result's coordinates
+    const searchResults = findLocationInDataset(query);
+    if (searchResults.length > 0) {
+      const { lat, lon } = searchResults[0];
+      const data = getWeatherForCoordinates(lat, lon);
+      if (data) return data;
+    }
+    
+    // Default to New York if no match
+    return weatherDataset["40.71,-74.01"];
+  }
+  
   try {
     const response = await fetch(
       `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(query)}&days=${days}&aqi=no&alerts=no`
