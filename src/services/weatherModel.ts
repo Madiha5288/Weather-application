@@ -11,7 +11,7 @@ export interface WeatherPrediction {
 }
 
 // Initialize the model
-let model: tf.LayersModel | null = null;
+let model: tf.Sequential | null = null;
 let isModelLoading = false;
 let isModelReady = false;
 
